@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  donations Donation[]
+}
+
+model Product {
+  id             Int       @id @default(autoincrement())
+  name           String
+  description    String
+  price          Int
+  stock          Int
+  municipalityId Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  donations      Donation[]
+}
+
+model Donation {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  amount    Int
+  status    Status   @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Municipality {
+  id         Int       @id @default(autoincrement())
+  name       String
+  prefecture String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  products   Product[]
+}
+
+enum Role {
+  USER
+  ADMIN
+  MUNICIPALITY
+}
+
+enum Status {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
